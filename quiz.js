@@ -11,7 +11,7 @@ const questions = [
 		options: ["Head", "Chest", "Back", "Abdomin", "Arms", "Legs", "Eyes", "Ears", "Mouth/Throat", "Skin", "Other"]
 	},
 	{
-		id: "symptom",
+		id: "symptoms",
 		text: "Which symptoms are you experiencing? (Choose any that apply)",
 		options: []
 	},
@@ -34,8 +34,10 @@ const questions = [
 
 function showQuestion(index) {
 	const q = questions[index];
-	if (index == 1)
-		q.options = [...new Set(quizData.filter(item => answers["location"].includes(item.location)).map(item => item.symptom))].sort();
+	if (index == 1) {
+		q.options = [...new Set(quizData.filter(item => answers["location"].some(location => location.toLowerCase() == item.location)).map(item => item.symptom[0].toUpperCase() + item.symptom.substring(1)))].sort();
+		q.options.push("Other");
+	}	
 	let type = "radio";
 	if (index < 2)
 		type = "checkbox";
@@ -43,8 +45,8 @@ function showQuestion(index) {
 		<div class="question">
 		<p>${q.text}</p>
 		${q.options.map(opt => `
-			<label>
 			<input type="${type}" name="${q.id}" value="${opt}" />
+			<label>
 			${opt}
 			</label><br/>
 		`).join("")}
@@ -60,11 +62,7 @@ function nextQuestion() {
 			const selected = Array.from(document.querySelectorAll(`input[name="${q.id}"]:checked`))
                       .map(el => el.value);
 			if (!selected) return alert("Please select an option.");
-			console.log(selected);
-			answers[q.id] = [];
-			selected.forEach(el => {
-				answers[q.id].push(el.value);
-			});
+			answers[q.id] = selected;
 		}
 		else {
 			const selected = document.querySelector(`input[name="${q.id}"]:checked`);
@@ -80,7 +78,8 @@ function nextQuestion() {
 }
 
 function showResults() {
-	const relevantEntries = quizData.filter(entry => entry.symptom === answers.symptom);
+	const relevantEntries = quizData.filter(entry => (entry.symptom == answers['symptom'] || (entry.symptom == "other" && answers.location.some(location => location.toLowerCase() == entry.location))));
+	console.log(relevantEntries);
 	const scores = {};
 
 	relevantEntries.forEach(entry => {

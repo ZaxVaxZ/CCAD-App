@@ -1,17 +1,506 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Symptom Checker</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Health Navigator — Mock</title>
+  <style>
+    /* --- Variables & base --- */
+    :root{
+      --bg-a: #e6f0ff;
+      --bg-b: #cfe9ff;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --accent:#2b6cf6;
+      --accent-2:#60a5fa;
+      --success:#2ecc71;
+      --shadow: 0 12px 30px rgba(8,25,63,0.08);
+      --radius:16px;
+      --gap:18px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;}
+    body{
+      background: linear-gradient(180deg,var(--bg-a) 0%, var(--bg-b) 100%);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      color: #071029;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+    }
+
+    /* --- App wrapper --- */
+    .app {
+      width:100%;
+      max-width:980px;
+      margin:0 auto;
+      position:relative;
+    }
+
+    /* --- Card common --- */
+    .card {
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:28px;
+    }
+
+    /* --- Top bar with logo & menu --- */
+    .topbar {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:18px;
+    }
+    .brand {
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo {
+      width:54px;
+      height:54px;
+      border-radius:12px;
+      display:inline-grid;
+      place-items:center;
+      color:white;
+      font-weight:800;
+      font-size:20px;
+      background: linear-gradient(180deg,var(--accent),var(--accent-2));
+      box-shadow: 0 8px 20px rgba(43,108,246,0.18);
+    }
+    .menu-icon {
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      background: rgba(255,255,255,0.9);
+      display:grid;
+      place-items:center;
+      box-shadow: 0 6px 18px rgba(8,25,63,0.04);
+      cursor: pointer;
+    }
+
+    /* --- Views --- */
+    .view { display:none; opacity:0; transform: translateY(12px); transition: all 320ms cubic-bezier(.2,.9,.2,1); }
+    .view.active { display:block; opacity:1; transform: translateY(0); }
+
+    /* --- Landing layout --- */
+    .landing-main {
+      display:flex;
+      gap:22px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .hero {
+      flex:1 1 420px;
+      min-width:240px;
+    }
+    .hero h1{
+      font-size:36px;
+      margin:6px 0;
+      line-height:1.02;
+    }
+    .hero p{ color:var(--muted); margin:12px 0 18px; max-width:560px; }
+
+    .controls { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .btn {
+      -webkit-tap-highlight-color: transparent;
+      border:0;
+      padding:12px 18px;
+      border-radius:12px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow: 0 10px 26px rgba(8,25,63,0.06);
+    }
+    .btn.primary { background: linear-gradient(90deg,var(--accent),var(--accent-2)); color:#fff; }
+    .btn.ghost { background: transparent; color:var(--muted); border:1px solid rgba(15,23,42,0.06); }
+
+    /* --- Dummy service cards --- */
+    .services {
+      display:flex;
+      gap:14px;
+      margin-top:18px;
+      flex-wrap:wrap;
+    }
+    .service {
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(240,248,255,0.7));
+      min-width:180px;
+      flex:1 1 180px;
+      border-radius:12px;
+      padding:14px;
+      border:1px solid rgba(15,23,42,0.03);
+      transition: transform .18s ease, box-shadow .18s ease;
+      cursor: default;
+    }
+    .service:hover { transform: translateY(-6px); box-shadow: 0 14px 36px rgba(8,25,63,0.08); }
+    .service h4 { margin: 0 0 6px; font-size:16px; }
+    .service p { margin:0; color:var(--muted); font-size:13px; }
+
+    /* --- Question card --- */
+    .question-wrap { max-width:760px; margin:0 auto; }
+    .q-title { font-size:20px; font-weight:700; margin-bottom:8px; }
+    .q-sub { color:var(--muted); margin-bottom:16px; }
+    .options { display:flex; flex-direction:column; gap:12px; }
+    .option {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px solid rgba(8,25,63,0.04);
+      background:linear-gradient(180deg, #fff, #fbfeff);
+      cursor:pointer;
+      transition: transform .12s ease;
+    }
+    .option input { width:18px; height:18px; accent-color: var(--accent); }
+    .option:hover { transform: translateY(-3px); }
+
+    .q-footer {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-top:18px;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .hint { color:#c56500; font-weight:600; font-size:13px; }
+
+    /* --- Result --- */
+    .result-center { text-align:center; padding:10px 20px; }
+    .badge-check {
+      width:96px;
+      height:96px;
+      border-radius:999px;
+      display:inline-grid;
+      place-items:center;
+      background: linear-gradient(180deg,#29c174,#2ecc71);
+      color:white;
+      font-size:44px;
+      box-shadow: 0 18px 44px rgba(46,204,113,0.12);
+      margin-bottom:12px;
+    }
+    .recommend { display:inline-block; margin-top:12px; border-radius:12px; padding:16px 20px; border:1px solid rgba(43,108,246,0.12); cursor:pointer; transition: transform .14s ease; }
+    .recommend:hover { transform: translateY(-6px); }
+
+    /* --- Responsive --- */
+    @media (max-width:880px){
+      .hero h1 { font-size:28px; }
+      .landing-main { flex-direction:column; align-items:flex-start; }
+      .services { width:100%; }
+    }
+    @media (max-width:420px){
+      .card { padding:18px; border-radius:12px; }
+      .logo { width:48px; height:48px; font-size:18px; border-radius:10px; }
+    }
+
+    /* --- tiny helper for subtle entrance animations on inner elements --- */
+    .fade-in { opacity:0; transform: translateY(8px); animation: fadeInUp .44s forwards; }
+    .delay-1 { animation-delay: .06s; } .delay-2 { animation-delay: .12s; } .delay-3 { animation-delay: .18s; }
+    @keyframes fadeInUp {
+      to { opacity:1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Cleveland Clinic Symptom Checker</h1>
-    <div id="quiz-container"></div>
+  <div class="app">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">C</div>
+        <div style="display:flex;flex-direction:column;">
+          <div style="font-weight:700">MediCare</div>
+          <div style="font-size:12px;color:var(--muted)">Navigator</div>
+        </div>
+      </div>
+      <div class="menu-icon" title="Menu (placeholder)">
+        ☰
+      </div>
+    </div>
+
+    <!-- LANDING VIEW -->
+    <section id="view-landing" class="view active card" aria-live="polite">
+      <div class="landing-main">
+        <div class="hero fade-in delay-1">
+          <h1>Your Health, <span style="color:var(--accent)">Our Priority</span></h1>
+          <p>Complete a short assessment and we'll recommend the most appropriate specialist for your needs.</p>
+
+          <div class="controls" style="margin-top:14px;">
+            <button id="startBtn" class="btn primary">Start Health Assessment →</button>
+            <button id="learnBtn" class="btn ghost">Learn More</button>
+          </div>
+
+          <div class="services" style="margin-top:20px;">
+		  	<a href="https://www.clevelandclinicabudhabi.ae/en/forms/request-appointment-callback" style="all: unset;">
+            <div class="service fade-in delay-2">
+              <h4>Book an Appointment</h4>
+              <p>Go to the Cleveland Clinic Abu Dhabi portal to book an appointment</p>
+            </div></a>
+            <div class="service fade-in delay-3">
+              <h4>Medical Records</h4>
+              <p>View the medical history and stored records and information</p>
+            </div>
+            <div class="service fade-in delay-1">
+              <h4>Upcoming Tests & Procedures</h4>
+              <p>Keep track of your upcoming tests, surgeries and procedures</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right-side small stats card -->
+        <aside style="width:320px; min-width:260px;">
+          <div class="card" style="padding:18px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <div style="font-weight:700">My Dashboard</div>
+              <div style="font-size:12px;color:var(--muted)">Updated</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-weight:600">Medications</div>
+                <div style="font-size:12px;color:var(--muted)">&rarr;</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-weight:600">Visits</div>
+                <div style="font-size:12px;color:var(--muted)">&rarr;</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-weight:600">Test Results</div>
+                <div style="font-size:12px;color:var(--muted)">&rarr;</div>
+              </div>
+            </div>
+            <div style="margin-top:14px; display:flex; gap:8px;">
+              <button class="btn primary" style="flex:1">Health Summary</button>
+              <button class="btn ghost" style="flex:1">FAQ</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- QUESTIONNAIRE VIEW -->
+    <section id="view-questions" class="view card" aria-hidden="true">
+      <div class="question-wrap">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div>
+            <div style="font-size:13px;color:var(--muted);">Health Assessment</div>
+          	<div style="font-size:12px;color:var(--muted)" id="progressText">1 / 4</div>
+            <div class="q-title" id="q-title">Question title</div>
+            <div class="q-sub" id="q-sub">Select one option</div>
+          </div>
+        </div>
+
+        <form id="optionsForm" style="margin-top:6px;">
+          <div class="options" id="optionsContainer">
+            <!-- options injected here -->
+          </div>
+
+          <div class="q-footer">
+            <button type="button" id="prevBtn" class="btn ghost">← Previous</button>
+            <div style="display:flex;gap:12px;align-items:center;">
+              <div id="validationHint" class="hint" style="visibility:hidden">Please select an option</div>
+              <button type="button" id="nextBtn" class="btn primary" disabled>Next →</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- RESULTS VIEW -->
+    <section id="view-results" class="view card" aria-hidden="true">
+      <div class="result-center">
+        <div class="badge-check">✓</div>
+        <h2 style="margin:6px 0 6px;">Assessment Complete!</h2>
+        <p style="color:var(--muted); max-width:720px; margin:0 auto 12px;">Based on your answers, we recommend the following specialist role for your needs.</p>
+
+        <div id="recommendCard" class="recommend" role="button" tabindex="0" aria-label="Recommended Specialist: Cardiologist">
+          <div style="text-align:left; max-width:520px;">
+            <div style="font-size:12px;color:var(--accent); font-weight:700;">Recommended Specialist Role</div>
+            <div style="font-size:20px;font-weight:800;margin-top:6px;">Cardiologist</div>
+            <div style="color:var(--muted);font-size:13px;margin-top:6px;">Expert in treating heart diseases and related conditions.</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <button id="restartBtn" class="btn ghost">Return to Start</button>
+        </div>
+      </div>
+    </section>
+
   </div>
   <script src="quizData.js"></script>
-  <script src="quiz.js"></script>
+  <script>
+    /***** Placeholder questions array *****/
+    const questions = [
+		{
+			id: "location",
+			title: "Where are your symptoms most prevelant?",
+			subtitle: "Choose any that apply",
+			options: ["Head", "Chest", "Back", "Abdomin", "Arms", "Legs", "Eyes", "Ears", "Mouth/Throat", "Skin", "Other"]
+		},
+		{
+			id: "symptoms",
+			title: "Which symptoms are you experiencing?",
+			subtitle: "Choose any that apply",
+			options: []
+		},
+		{
+			id: "severity",
+			title: "How severe are the symptoms?",
+			subtitle: "Choose one",
+			options: ["Mild", "Moderate", "Severe"]
+		},
+		{
+			id: "preference",
+			title: "Would you prefer a general checkup or to see a specialist?",
+			subtitle: "Choose one",
+			options: ["General Checkup", "See a Specialist"]
+		}
+	];
+
+    let currentQuestion = 0;
+    const answers = {};
+
+    // Views
+    const viewLanding = document.getElementById('view-landing');
+    const viewQuestions = document.getElementById('view-questions');
+    const viewResults = document.getElementById('view-results');
+
+    const startBtn = document.getElementById('startBtn');
+    const learnBtn = document.getElementById('learnBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const recommendCard = document.getElementById('recommendCard');
+
+    const qTitle = document.getElementById('q-title');
+    const qSub = document.getElementById('q-sub');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const progressText = document.getElementById('progressText');
+    const validationHint = document.getElementById('validationHint');
+
+    /** view toggling with subtle transitions **/
+    function showView(view) {
+      // hide all first
+      [viewLanding, viewQuestions, viewResults].forEach(v => {
+        v.classList.remove('active');
+        v.setAttribute('aria-hidden', 'true');
+      });
+      // small delay to allow CSS to animate if switching quickly
+      requestAnimationFrame(() => {
+        view.classList.add('active');
+        view.removeAttribute('aria-hidden');
+        window.scrollTo({top:0, behavior:'smooth'});
+      });
+    }
+
+    function renderQuestion(idx) {
+      const q = questions[idx];
+		if (idx == 1) {
+			q.options = [...new Set(quizData.filter(item => answers["location"].some(location => location.toLowerCase() == item.location)).map(item => item.symptom[0].toUpperCase() + item.symptom.substring(1)))].sort();
+			q.options.push("Other");
+		}	
+		let type = "radio";
+		if (idx < 2)
+			type = "checkbox";
+      qTitle.textContent = q.title;
+      qSub.textContent = q.subtitle;
+      progressText.textContent = (idx+1) + ' / ' + questions.length;
+      optionsContainer.innerHTML = '';
+
+      const name = 'opt-' + q.id;
+      q.options.forEach((opt, i) => {
+        const option = document.createElement('label');
+        option.className = 'option';
+        option.tabIndex = 0;
+        option.innerHTML = `
+          <input type="${type}" name="${name}" value="${opt}" aria-label="${opt}" />
+          <div style="font-weight:600">${opt}</div>
+        `;
+        option.addEventListener('click', (e) => {
+          const input = option.querySelector('input');
+          input.checked = true;
+          input.dispatchEvent(new Event('change', {bubbles:true}));
+        });
+        optionsContainer.appendChild(option);
+
+        const input = option.querySelector('input');
+        input.addEventListener('change', (e) => {
+          answers[q.id] = Number(e.target.value);
+          nextBtn.disabled = false;
+          validationHint.style.visibility = 'hidden';
+        });
+
+        // if previously answered, reflect it
+        if (typeof answers[q.id] !== 'undefined' && answers[q.id] === opt) {
+          input.checked = true;
+        }
+      });
+
+      prevBtn.style.visibility = idx === 0 ? 'hidden' : 'visible';
+      nextBtn.disabled = (typeof answers[q.id] === 'undefined');
+    }
+
+    // Start
+    startBtn.addEventListener('click', () => {
+      currentQuestion = 0;
+      renderQuestion(currentQuestion);
+      showView(viewQuestions);
+    });
+
+    learnBtn.addEventListener('click', () => {
+      alert('Learn more placeholder — replace with real content or a modal.');
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (currentQuestion > 0) {
+        currentQuestion--;
+        renderQuestion(currentQuestion);
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      const q = questions[currentQuestion];
+      if (typeof answers[q.id] === 'undefined') {
+        validationHint.style.visibility = 'visible';
+        return;
+      }
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        renderQuestion(currentQuestion);
+      } else {
+        // Show results (static recommendation per spec)
+        showView(viewResults);
+      }
+    });
+
+    // Clicking recommendation returns to landing (per instruction)
+    recommendCard.addEventListener('click', () => {
+      // Optionally clear answers:
+      // Object.keys(answers).forEach(k => delete answers[k]);
+      showView(viewLanding);
+    });
+    recommendCard.addEventListener('keypress', (e) => { if (e.key === 'Enter') recommendCard.click(); });
+
+    // Restart button
+    restartBtn.addEventListener('click', () => {
+      showView(viewLanding);
+    });
+
+    // keyboard nav
+    document.addEventListener('keydown', (e) => {
+      if (!viewQuestions.classList.contains('active')) return;
+      if (e.key === 'ArrowLeft') prevBtn.click();
+      if (e.key === 'ArrowRight') nextBtn.click();
+    });
+
+    // initial: show landing (already active)
+    showView(viewLanding);
+
+  </script>
 </body>
 </html>

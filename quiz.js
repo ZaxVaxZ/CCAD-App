@@ -1,6 +1,5 @@
 const quizContainer = document.getElementById("quiz-container");
 
-
 let currentQuestion = 0;
 let answers = {};
 

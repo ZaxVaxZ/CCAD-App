@@ -1,0 +1,32 @@
+<!-- FILE: q4-duration.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Question 4 — Duration</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <div class="card">
+      <header class="card-header">
+        <h2>4. How long have these symptoms lasted?</h2>
+        <progress value="4" max="6" class="progress"></progress>
+      </header>
+
+      <div class="options single" data-key="duration">
+        <label><input type="radio" name="duration" value="acute"> Less than 48 hours (acute)</label>
+        <label><input type="radio" name="duration" value="subacute"> 2–14 days (subacute)</label>
+        <label><input type="radio" name="duration" value="chronic"> More than 14 days (chronic)</label>
+      </div>
+
+      <div class="actions">
+        <a class="btn" id="back">Back</a>
+        <a class="btn" id="next">Next</a>
+      </div>
+    </div>
+  </main>
+  <script src="quiz.js"></script>
+</body>
+</html>

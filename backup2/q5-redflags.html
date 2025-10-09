@@ -1,0 +1,39 @@
+<!-- FILE: q5-redflags.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Question 5 — Red flags</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <div class="card">
+      <header class="card-header">
+        <h2>5. Do you have any of the following red flags? (choose all that apply)</h2>
+        <progress value="5" max="6" class="progress"></progress>
+      </header>
+
+      <div class="options multi" data-key="redFlags">
+        <label><input type="checkbox" value="unexplained_weight_loss"> Unexplained weight loss</label>
+        <label><input type="checkbox" value="fever_night_sweats"> Fever / night sweats</label>
+        <label><input type="checkbox" value="new_painless_lump"> New painless lump</label>
+        <label><input type="checkbox" value="sudden_severe_headache"> Sudden severe headache</label>
+        <label><input type="checkbox" value="new_weakness"> New weakness / numbness / speech difficulty</label>
+        <label><input type="checkbox" value="blood_in_stool"> Blood in stool</label>
+        <label><input type="checkbox" value="blood_in_urine"> Blood in urine</label>
+        <label><input type="checkbox" value="persistent_vomiting"> Persistent vomiting</label>
+        <label><input type="checkbox" value="fainting"> Fainting or passing out</label>
+        <label><input type="checkbox" value="none"> None of the above</label>
+      </div>
+
+      <div class="actions">
+        <a class="btn" id="back">Back</a>
+        <a class="btn" id="next">Next</a>
+      </div>
+    </div>
+  </main>
+  <script src="quiz.js"></script>
+</body>
+</html>

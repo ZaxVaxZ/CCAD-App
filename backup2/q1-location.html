@@ -1,0 +1,41 @@
+<!-- FILE: q1-location.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Question 1 — Where do you feel symptoms?</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <div class="card">
+      <header class="card-header">
+        <h2>1. Where are your symptoms located? (choose all that apply)</h2>
+        <progress value="1" max="6" class="progress"></progress>
+      </header>
+
+      <div class="options multi" data-key="location">
+        <label><input type="checkbox" value="chest"> Chest</label>
+        <label><input type="checkbox" value="head"> Head / Neck</label>
+        <label><input type="checkbox" value="abdomen"> Abdomen</label>
+        <label><input type="checkbox" value="back"> Back</label>
+        <label><input type="checkbox" value="joint"> Limb / Joint</label>
+        <label><input type="checkbox" value="pelvic"> Pelvic / Genital</label>
+        <label><input type="checkbox" value="breast"> Breast</label>
+        <label><input type="checkbox" value="eye"> Eye</label>
+        <label><input type="checkbox" value="ent"> Ear / Nose / Throat</label>
+        <label><input type="checkbox" value="mouth"> Mouth / Teeth</label>
+        <label><input type="checkbox" value="urinary"> Urinary</label>
+        <label><input type="checkbox" value="skin"> Skin</label>
+        <label><input type="checkbox" value="generalized"> Generalized / Whole body</label>
+      </div>
+
+      <div class="actions">
+        <a class="btn" id="next">Next</a>
+      </div>
+    </div>
+  </main>
+  <script src="quiz.js"></script>
+</body>
+</html>

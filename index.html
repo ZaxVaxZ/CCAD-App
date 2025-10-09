@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Health Navigator — Mock</title>
+  <title>Cleveland Clinic Abu Dhabi - Mock</title>
   <style>
     /* --- Variables & base --- */
     :root{
@@ -214,7 +214,7 @@
       <div class="brand">
         <div class="logo">C</div>
         <div style="display:flex;flex-direction:column;">
-          <div style="font-weight:700">MediCare</div>
+          <div style="font-weight:700">Cleveland Clinic Abu Dhabi</div>
           <div style="font-size:12px;color:var(--muted)">Navigator</div>
         </div>
       </div>
@@ -228,11 +228,10 @@
       <div class="landing-main">
         <div class="hero fade-in delay-1">
           <h1>Your Health, <span style="color:var(--accent)">Our Priority</span></h1>
-          <p>Complete a short assessment and we'll recommend the most appropriate specialist for your needs.</p>
+          <p>Complete a short assessment and we'll recommend the most appropriate department for your needs.</p>
 
           <div class="controls" style="margin-top:14px;">
             <button id="startBtn" class="btn primary">Start Health Assessment →</button>
-            <button id="learnBtn" class="btn ghost">Learn More</button>
           </div>
 
           <div class="services" style="margin-top:20px;">
@@ -295,7 +294,7 @@
         </div>
 
         <form id="optionsForm" style="margin-top:6px;">
-          <div class="options" id="optionsContainer">
+          <div class="options" id="optionsContainer" style="overflow: auto; max-height: 500px;">
             <!-- options injected here -->
           </div>
 
@@ -315,17 +314,18 @@
       <div class="result-center">
         <div class="badge-check">✓</div>
         <h2 style="margin:6px 0 6px;">Assessment Complete!</h2>
-        <p style="color:var(--muted); max-width:720px; margin:0 auto 12px;">Based on your answers, we recommend the following specialist role for your needs.</p>
+        <p style="color:var(--muted); max-width:720px; margin:0 auto 12px;">Based on your answers, we recommend a visit to the following department:</p>
 
         <div id="recommendCard" class="recommend" role="button" tabindex="0" aria-label="Recommended Specialist: Cardiologist">
           <div style="text-align:left; max-width:520px;">
-            <div style="font-size:12px;color:var(--accent); font-weight:700;">Recommended Specialist Role</div>
-            <div style="font-size:20px;font-weight:800;margin-top:6px;">Cardiologist</div>
-            <div style="color:var(--muted);font-size:13px;margin-top:6px;">Expert in treating heart diseases and related conditions.</div>
+            <div style="font-size:12px;color:var(--accent); font-weight:700;">Recommended Department</div>
+            <div id="resultText" style="font-size:20px;font-weight:800;margin-top:6px;"></div>
+            <div id="extraNote" style="color:var(--muted);font-size:13px;margin-top:6px;"></div>
           </div>
         </div>
 
         <div style="margin-top:14px;">
+          <a href="https://www.clevelandclinicabudhabi.ae/en/forms/request-appointment-callback" style="all: unset;"><button type="button" class="btn" style="margin-bottom: 10px;">Book an appointment</button></a>
           <button id="restartBtn" class="btn ghost">Return to Start</button>
         </div>
       </div>
@@ -363,7 +363,7 @@
 	];
 
     let currentQuestion = 0;
-    const answers = {};
+    let answers = {"location": [], "symptoms": []};
 
     // Views
     const viewLanding = document.getElementById('view-landing');
@@ -371,7 +371,6 @@
     const viewResults = document.getElementById('view-results');
 
     const startBtn = document.getElementById('startBtn');
-    const learnBtn = document.getElementById('learnBtn');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     const restartBtn = document.getElementById('restartBtn');
@@ -412,7 +411,7 @@
       progressText.textContent = (idx+1) + ' / ' + questions.length;
       optionsContainer.innerHTML = '';
 
-      const name = 'opt-' + q.id;
+      const name = q.id;
       q.options.forEach((opt, i) => {
         const option = document.createElement('label');
         option.className = 'option';
@@ -423,26 +422,36 @@
         `;
         option.addEventListener('click', (e) => {
           const input = option.querySelector('input');
-          input.checked = true;
-          input.dispatchEvent(new Event('change', {bubbles:true}));
+          if (input.type == "radio")
+			input.checked = true;
+		  else
+		  	input.checked = !input.checked;
+		  if (input.checked)
+		  	nextBtn.disabled = false;
+		else 
+			nextBtn.disabled = (typeof answers[q.id] === 'undefined' || (currentQuestion < 2 && answers[q.id].length == 0));
+			e.stopPropagation();
         });
         optionsContainer.appendChild(option);
 
-        const input = option.querySelector('input');
-        input.addEventListener('change', (e) => {
-          answers[q.id] = Number(e.target.value);
-          nextBtn.disabled = false;
-          validationHint.style.visibility = 'hidden';
-        });
+        // const input = option.querySelector('input');
+        // input.addEventListener('change', (e) => {
+        //   if (currentQuestion < 2)
+		// 	answers[q.id].push(e.target.value)
+		//   else
+		// 	answers[q.id] = e.target.value;
+		// console.log(answers);
+        //   nextBtn.disabled = false;
+        //   validationHint.style.visibility = 'hidden';
+        // });
 
         // if previously answered, reflect it
-        if (typeof answers[q.id] !== 'undefined' && answers[q.id] === opt) {
-          input.checked = true;
-        }
+        // if (typeof answers[q.id] !== 'undefined' && answers[q.id] === opt) {
+        //   input.checked = false;
+        // }
       });
-
       prevBtn.style.visibility = idx === 0 ? 'hidden' : 'visible';
-      nextBtn.disabled = (typeof answers[q.id] === 'undefined');
+      nextBtn.disabled = (typeof answers[q.id] === 'undefined' || (currentQuestion < 2 && answers[q.id].length == 0));
     }
 
     // Start
@@ -452,12 +461,20 @@
       showView(viewQuestions);
     });
 
-    learnBtn.addEventListener('click', () => {
-      alert('Learn more placeholder — replace with real content or a modal.');
-    });
-
     prevBtn.addEventListener('click', () => {
       if (currentQuestion > 0) {
+		if (currentQuestion > 2) {
+			answers[questions[currentQuestion].id] = undefined;
+			if (currentQuestion == 2)
+				answers[questions[currentQuestion - 1].id] = [];
+			else
+				answers[questions[currentQuestion - 1].id] = undefined;
+		}
+		else {
+			answers[questions[currentQuestion].id] = [];
+			if (currentQuestion > 0)
+				answers[questions[currentQuestion - 1].id] = [];
+		}
         currentQuestion--;
         renderQuestion(currentQuestion);
       }
@@ -465,6 +482,18 @@
 
     nextBtn.addEventListener('click', () => {
       const q = questions[currentQuestion];
+	  if (currentQuestion < 2)
+		{
+			const selected = Array.from(document.querySelectorAll(`input[name="${q.id}"]:checked`))
+                      .map(el => el.value);
+			if (!selected) return alert("Please select an option.");
+			answers[q.id] = selected;
+		}
+		else {
+			const selected = document.querySelector(`input[name="${q.id}"]:checked`);
+			if (!selected) return alert("Please select an option.");
+			answers[q.id] = selected.value;
+		}
       if (typeof answers[q.id] === 'undefined') {
         validationHint.style.visibility = 'visible';
         return;
@@ -474,6 +503,33 @@
         renderQuestion(currentQuestion);
       } else {
         // Show results (static recommendation per spec)
+		let relevantEntries = [];
+		if (answers['symptoms'][0] == 'Other')
+			relevantEntries = quizData.filter(entry => (answers['location'].some(locat => locat.toLowerCase() == entry.location)));
+		else
+			relevantEntries = quizData.filter(entry => (answers['symptoms'].some(symp => symp.toLowerCase() == entry.symptom)));
+		
+		const scores = {};
+
+		let primary = false;
+		relevantEntries.forEach(entry => {
+			if (answers.severity == "Mild")
+				primary = true;
+			if (answers.severity != "Severe" && answers.preference != "Specialist")
+				primary = true;
+
+			const score = entry.confidence;
+
+			if (!scores[entry.specialty])
+				scores[entry.specialty] = 0;
+			scores[entry.specialty] += score;
+		});
+
+		const finalRes = Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+		
+		document.getElementById('resultText').innerText = finalRes;
+		document.getElementById('extraNote').innerHTML = `${primary ? `<p><strong>Note:</strong> In your situation, it would also help to get a general check up at a Primary Care clinic before visiting a specialist.` : ''}`;
+		
         showView(viewResults);
       }
     });

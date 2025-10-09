@@ -21,11 +21,6 @@ const questions = [
 		options: ["Mild", "Moderate", "Severe"]
 	},
 	{
-		id: "duration",
-		text: "How long have you had these symptoms?",
-		options: ["< 1 day", "1-3 days", "1 week", "More than 1 week"]
-	},
-	{
 		id: "preference",
 		text: "Would you prefer a general checkup or to see a specialist?",
 		options: ["General Checkup", "See a Specialist"]
@@ -78,30 +73,40 @@ function nextQuestion() {
 }
 
 function showResults() {
-	const relevantEntries = quizData.filter(entry => (entry.symptom == answers['symptom'] || (entry.symptom == "other" && answers.location.some(location => location.toLowerCase() == entry.location))));
-	console.log(relevantEntries);
+	let relevantEntries = [];
+	if (answers['symptoms'][0] == 'Other')
+		relevantEntries = quizData.filter(entry => (answers['location'].some(locat => locat.toLowerCase() == entry.location)));
+	else
+		relevantEntries = quizData.filter(entry => (answers['symptoms'].some(symp => symp.toLowerCase() == entry.symptom)));
+	
 	const scores = {};
 
+	let primary = false;
 	relevantEntries.forEach(entry => {
-		let weight = 1;
-		if (answers.severity === "Severe") weight += 0.5;
-		if (answers.duration === "More than 1 week") weight += 0.5;
-		if (answers.preference === "Specialist") weight += 0.5;
-		const score = entry.confidence * weight;
+		if (answers.severity == "Mild")
+			primary = true;
+		if (answers.severity != "Severe" && answers.preference != "Specialist")
+			primary = true;
 
-		if (!scores[entry.department])
-			scores[entry.department] = 0;
-		scores[entry.department] += score;
+		const score = entry.confidence;
+
+		if (!scores[entry.specialty])
+			scores[entry.specialty] = 0;
+		scores[entry.specialty] += score;
 	});
 
-	const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+	let sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+	if (sorted.length > 3) {
+		sorted = sorted.slice(0, 3);
+	}
 
 	quizContainer.innerHTML = `
 		<div class="result">
-		<h2>Recommended Department(s):</h2>
+		<h2>Recommended Department(s) In Order Of Confidence:</h2>
 		<ul>
-			${sorted.slice(0, 3).map(([dept, score]) => `<li>${dept} (${(score * 100).toFixed(1)}% confidence)</li>`).join("")}
+			${sorted.map(([dept, score]) => `<li>${dept}</li><br>`).join("")}
 		</ul>
+		${primary ? `<p><strong>Note:</strong> In your situation, it is recommended that you get a general check up at a Primary Care clinic before visiting a specialist.` : ''}
 		</div>
 	`;
 }
